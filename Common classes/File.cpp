@@ -7,27 +7,24 @@
 using namespace std;
 
 void File::clear() {
-    file_input.close();
-    file_output.close();
-    file_input.open(filename, fstream::in | fstream::trunc);
     file_output.open(filename, fstream::out | fstream::trunc);
-}
-
-void File::move_to_begining() {
-    assert(0); // Эта функция не работает
-    file_input.seekg(0, file_input.beg);
-    file_output.seekp(0, file_input.beg);
+    file_output.close();
 }
 
 string File::read_whole_file() {
-    file_input.close();
     file_input.open(filename, fstream::in);
     string res, cur;
-    while (getline(file_input, cur)) {
-        cur.push_back('\n');
-        res += cur;
+    try {
+        while (1) {
+            getline(file_input, cur);
+            cur.push_back('\n');
+            res += cur;
+        }
     }
-    return res;
+    catch (exception& e) {
+        file_input.close();
+        return res;
+    }
 }
 
 string File::get_directory(string filename) {
@@ -45,4 +42,16 @@ string File::get_directory(string filename) {
 void File::close() {
     file_input.close();
     file_output.close();
+}
+
+int File::size() {
+    std::ifstream file(filename.c_str(), std::ios_base::binary);
+    long nFileLen = 0;
+    if (file)
+    {
+        file.seekg(0, std::ios_base::end);
+        nFileLen = file.tellg();
+        file.close();
+    }
+    return nFileLen;
 }

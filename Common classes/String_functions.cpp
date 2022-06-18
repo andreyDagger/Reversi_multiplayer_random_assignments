@@ -91,7 +91,7 @@ string String_functions::input_string() {
     do {
         res += c;
         c = getchar();
-    }     while (c != EOF && c != '\n');
+    } while (c != EOF && c != '\n');
 
     return res;
 }

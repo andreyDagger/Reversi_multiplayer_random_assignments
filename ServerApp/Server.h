@@ -55,24 +55,17 @@ private:
 																	[client_id] [game_id], которые были поставлены вместо "0 0"
 	Client* create_client(int client_id, int game_id);
 	void connect_two_clients(Client*, Client*, int game_id);
+
 	void check_running_games();
 	bool check_game(Game*); // Возвращает true, если игра закончилась
+	void check_if_made_turn(File* client_to_serv, int& x, int& y, int& which_keg); // Прооверяет, сделал ли ход клиент
+	void make_turn_and_output(int x, int y, int which_keg, File* file, Game* game); // Выводит ход одного клиента в файл для другого клиента
 public:
 	const static int MAX_CLIENT_ID = 10;
 	const static int MAX_GAME_ID = 10;
 
-	Server(string linker_filename) {
-		// Удаляем все файлы, созданные на предыдущем запуске сервера
-		string linker_dir = File::get_directory(linker_filename);
-		for (int cl_id = 1; cl_id <= MAX_CLIENT_ID; cl_id++) {
-			for (int game_id = 1; game_id <= MAX_GAME_ID; game_id++) {
-				remove((linker_dir + to_string(cl_id) + "_" + to_string(game_id) + "_" + "server_client.txt").c_str());
-				remove((linker_dir + to_string(cl_id) + "_" + to_string(game_id) + "_" + "client_server.txt").c_str());
-			}
-		}
-
-		linker = new File(linker_filename.c_str(), fstream::in, fstream::out | fstream::trunc);
-	}
+	Server(string linker_filename);
 
 	void start_server();
+	void print_error_message(exception&, File*); // Выаодит сообщение об ошибке и вызывает exit(1)
 };

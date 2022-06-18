@@ -5,13 +5,34 @@ int Client::connect_to_server() {
 	int pos = count(whole_file.begin(), whole_file.end(), '\n');
 	whole_file += "0 0 0\n";
 
-	linker->clear();
-	linker->file_output << whole_file;
-	linker->file_output.flush();
+	try {
+		linker->file_output.open(linker->filename, fstream::out | fstream::trunc);
+		linker->file_output << whole_file;
+		linker->file_output.close();
+
+		linker->exceptions_count = 0;
+	}
+	catch (exception& e) {
+		linker->exceptions_count++;
+		if (linker->exceptions_count >= 10)
+			print_error_message(e, linker);
+	}
 
 	int game_id;
 	while (1) {
-		string whole_file = linker->read_whole_file();
+		Sleep(247);
+
+		try {
+			whole_file = linker->read_whole_file();
+			linker->exceptions_count = 0;
+		}
+		catch (exception& e) {
+			linker->exceptions_count++;
+			if (linker->exceptions_count >= 10) {
+				print_error_message(e, linker);
+			}
+		}
+
 		vector<string> parsed = String_functions::split(whole_file, '\n');
 		if (parsed.size() <= pos || parsed[pos] == "0 0 0")
 			continue;
@@ -25,9 +46,17 @@ int Client::connect_to_server() {
 		is_first = String_functions::str_to_int(parsed_string[2]);
 		competitor->color = Gaming_field::get_color(is_first);
 
-		string pref = File::get_directory(linker->filename) + to_string(id) + "_" + to_string(game_id);
-		client_to_server = new File(pref + "_client_server.txt", fstream::in, fstream::out | fstream::app);
-		server_to_client = new File(pref + "_server_client.txt", fstream::in, fstream::out | fstream::app);
+		try {
+			string pref = File::get_directory(linker->filename) + to_string(id) + "_" + to_string(game_id);
+			
+			client_to_server = new File(pref + "_client_server.txt");
+			server_to_client = new File(pref + "_server_client.txt");
+		}
+		catch (File::Bad_filename& e) {
+			vis->write("Error: " + String_functions::char_to_str(e.what()) + "\n", Black, Red);
+			system("pause");
+			exit(1);
+		}
 
 		return game_id;
 	}
@@ -37,9 +66,25 @@ pair<int, int> Client::get_second_player_turn() {
 	vis->write("∆дЄм второго игрока...");
 	while (1) {
 		int x = -1, y = -1, which_keg = -1;
-		server_to_client->file_input.close();
-		server_to_client->file_input.open(server_to_client->filename, fstream::in);
-		server_to_client->file_input >> x >> y >> which_keg;
+
+		try {
+			if (File::FileExists(server_to_client->filename.c_str())) {
+				server_to_client->file_input.open(server_to_client->filename, fstream::in);
+				int file_size = server_to_client->size();
+				if (file_size > 0)
+					server_to_client->file_input >> x >> y >> which_keg;
+				server_to_client->file_input.close();
+			}
+			server_to_client->exceptions_count = 0;
+		}
+		catch (exception& e) {
+			server_to_client->exceptions_count++;
+			if (server_to_client->exceptions_count >= 10) {
+				vis->write("Error: " + String_functions::char_to_str(e.what()) + "\n", Black, Red);
+				system("pause");
+				exit(1);
+			}
+		}
 
 		if (field->count_kegs() == which_keg - 1 && x != -1 && y != -1 && which_keg != -1) {
 			field->place_keg_and_revert(x, y, Competitor::get_opposite_color(competitor->color));
@@ -61,10 +106,17 @@ void Client::play_game(int game_id) {
 		int x = point.first;
 		int y = point.second;
 
-		client_to_server->file_output.close();
-		client_to_server->file_output.open(client_to_server->filename, fstream::out | fstream::trunc);
-		client_to_server->file_output << x << " " << y << " " << field->count_kegs() << " ";
-		client_to_server->file_output.flush();
+		try {
+			client_to_server->file_output.open(client_to_server->filename, fstream::out | fstream::trunc);
+			client_to_server->file_output << x << " " << y << " " << field->count_kegs() << " ";
+			client_to_server->file_output.close();
+			client_to_server->exceptions_count = 0;
+		}
+		catch (exception& e) {
+			client_to_server->exceptions_count++;
+			if (client_to_server->exceptions_count >= 10)
+				print_error_message(e, client_to_server);
+		}
 
 		if (field->is_end())
 			break;
@@ -73,4 +125,11 @@ void Client::play_game(int game_id) {
 			break;
 	}
 	field->write_end_information();
+	system("pause");
+}
+
+void Client::print_error_message(exception& e, File* file) {
+	vis->write("Error: " + String_functions::char_to_str(e.what()) + ". File: " + file->filename + "\n", Black, Red);
+	system("pause");
+	exit(1);
 }

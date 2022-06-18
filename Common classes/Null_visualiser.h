@@ -32,4 +32,6 @@ public:
 
 	void erase_field(int width, int height) {} // стирает поле
 	void erase_cell(int x, int y) {} // стирает бочонок с координатами (x, y)
+
+	void clear() {}
 };

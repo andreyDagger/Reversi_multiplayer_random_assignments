@@ -48,7 +48,13 @@ void SetConsoleCursorPos(int x, int y) {
 
 string read_ini(const char* section, const char* key_name, const char* filename, const char* def) {
     char buf[MAXINIKEYSIZE];
+    SetLastError(0);
     GetPrivateProfileStringA(section, key_name, def, buf, MAXINIKEYSIZE, \
         filename);
+    int error_code = GetLastError();
+    if (error_code != 0) {
+        cout << "In file " << filename << "In section " << section << " " << "key name " << key_name << " wasn't found\n";
+        exit(1);
+    }
     return String_functions::char_to_str(buf);
 }

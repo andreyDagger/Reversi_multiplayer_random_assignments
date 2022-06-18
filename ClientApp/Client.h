@@ -11,7 +11,7 @@ public:
 	void play_game(int game_id); // играет игру
 
 	Client(string linker_filename, Visualiser* Vis, Competitor* comp) : vis(Vis), competitor(comp) {
-		linker = new File(linker_filename, fstream::in | fstream::ate, fstream::app | fstream::ate);
+		linker = new File(linker_filename);
 	}
 private:
 	Competitor* competitor;
@@ -26,5 +26,6 @@ private:
 	File* client_to_server;
 	File* server_to_client;
 
+	void print_error_message(exception&, File*);
 	pair<int, int> get_second_player_turn(); // ∆дЄт, пока второй игрок сходит
 };

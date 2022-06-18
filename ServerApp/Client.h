@@ -13,7 +13,7 @@ public:
 	int get_id() const { return id; }
 
 	Client(int ID, string client_server_fname, string server_client_fname) : id(ID) {
-		client_to_server = new File(client_server_fname.c_str(), fstream::in, fstream::out | fstream::trunc);
-		server_to_client = new File(server_client_fname.c_str(), fstream::in, fstream::out | fstream::trunc);
+		client_to_server = new File(client_server_fname);
+		server_to_client = new File(server_client_fname);
 	}
 };

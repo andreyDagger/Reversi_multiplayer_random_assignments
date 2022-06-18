@@ -29,6 +29,8 @@ public:
 	virtual void erase_field(int width, int height) = 0; // стирает поле
 	virtual void erase_cell(int x, int y) = 0; // стирает бочонок с заданными координатами
 
+	virtual void clear() = 0; // Чистит абсолютно ВСЁ
+
 	// Исключения:
 	class Bad_integers_input : public exception {
 	private:
